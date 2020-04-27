@@ -28,26 +28,28 @@ client.on('message', async message => {
     const serverQueue = queue.get(message.guild.id);
 
     if (message.content.startsWith(`${prefix}play`)) {
-        execute(message, serverQueue);
-        return;
+      execute(message, serverQueue);
+      return;
     } else if (message.content.startsWith(`${prefix}skip`)) {
-        skip(message, serverQueue);
-        return;
+      skip(message, serverQueue);
+      return;
     } else if (message.content.startsWith(`${prefix}stop`)) {
-        stop(message, serverQueue);
-        return;
+      stop(message, serverQueue);
+      return;
     } else if (message.content.startsWith(`${prefix}queue`)) {
-        list(message, serverQueue);
+      list(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}pause`)) {
-        pause(message, serverQueue);
+      pause(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}resume`)) {
-        resume(message, serverQueue);
+      resume(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}clear`)) {
-        clear(message, serverQueue);
+      clear(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}track`)) {
-        track(message, serverQueue);
+      track(message, serverQueue);
     } else if (message.content.startsWith(`${prefix}help`)) {
-        help(message);
+      help(message);
+    } else if (message.content.startsWith(`${prefix}volume`)) {
+      volume(message);
     };
 });
 
@@ -191,6 +193,10 @@ const track = (message, serverQueue) => {
 
 const help = (message) => {
   let commands =
-    "Valid commands:\n!play {YouTubeUrl} to play a track or add a track to the queue\n!skip to skip the current track\n!pause to pause playback\n!resume to resume playback\n!track to list the current track\n!queue to see the current queue\n!clear to clear the queue\n!stop to end the session";
+    "Valid commands:\n!play {YouTubeUrl} to play a track or add a track to the queue\n!skip to skip the current track\n!pause to pause playback\n!resume to resume playback\n!track to list the current track\n!queue to see the current queue\n!clear to clear the queue\n!volume for details on how to adjust the volume\n!stop to end the session";
   message.channel.send(commands);
+};
+
+const volume = (message) => {
+  message.channel.send("You can adjust my volume by right clicking me in the voice channel and moving the user volume slider to your desired level.");
 };
