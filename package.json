@@ -4,17 +4,15 @@
   "description": "Discord music bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.2.1",
-    "discord-ytdl-core": "^1.0.2",
     "discord.js": "^12.2.0",
     "dotenv": "^8.2.0",
-    "eslint": "^6.8.0",
-    "ytdl-core": "^2.1.1",
     "ytdl-core-discord": "^1.2.0"
   }
 }
