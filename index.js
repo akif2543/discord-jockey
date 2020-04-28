@@ -1,6 +1,6 @@
 require("dotenv").config();
 const Discord = require('discord.js');
-const ytdl = require('ytdl-core-discord')
+const ytdl = require('ytdl-core-discord');
 
 const client = new Discord.Client();
 client.login(process.env.DISCORD_TOKEN);
@@ -50,7 +50,15 @@ client.on('message', async message => {
       help(message);
     } else if (message.content.startsWith(`${prefix}volume`)) {
       volume(message);
+    } else if (message.content.startsWith(`${prefix}quit`)) {
+      quit(message, serverQueue);
     };
+});
+
+client.on('error', console.log);
+
+process.on('unhandledRejection', err => {
+  console.error('Unhandled promise rejection:', err)
 });
 
 const execute = async (message, serverQueue) => {
@@ -69,7 +77,7 @@ const execute = async (message, serverQueue) => {
     const songInfo = await ytdl.getInfo(args[1]);
     const song = {
         title: songInfo.title,
-        url: songInfo.video_url,
+        url: songInfo.video_url
     };
 
     if (!serverQueue) {
@@ -132,12 +140,33 @@ const play = async (message, song) => {
     return;
   }
 
+  let stream;
+
   try {
-    dispatcher = serverQueue.connection.play(await ytdl(song.url), {
+    stream = await ytdl(song.url, {filter: 'audioonly'});
+  } catch(err) {
+    console.error(err);
+
+    serverQueue.songs.shift();
+    if (serverQueue.songs.length) {
+      message.channel.send(
+        `Hmmm, I can't seem to play ${song.title}. Skipping.`
+      );
+      play(message, serverQueue.songs[0])
+    } else {
+      message.channel.send(
+        `Hmmm, I can't seem to play ${song.title}. No more songs in queue.`
+      );
+      quit(message, serverQueue);
+    }; 
+  };
+
+    dispatcher = serverQueue.connection.play(stream, {
       type: "opus",
       volume: false,
       highWaterMark: 50,
     });
+    
     dispatcher
       .on("start", () => {
         console.log("Music now playing.");
@@ -151,20 +180,14 @@ const play = async (message, song) => {
       .on("error", (err) => {
         console.error(err);
       });
-  }catch(err) {
-    console.log(err);
-  };  
 };
 
 const list = (message, serverQueue) => {
   if (!serverQueue) return;
   let tracks = serverQueue.songs.map(song => {
-    console.log(song)
     return song.title;
   });
-  console.log(tracks);
   let next_tracks = tracks.slice(1).join(' , ');
-  console.log(next_tracks);
   message.channel.send(`Queued tracks: ${next_tracks}`);
 };
 
@@ -199,4 +222,20 @@ const help = (message) => {
 
 const volume = (message) => {
   message.channel.send("You can adjust my volume by right clicking me in the voice channel and moving the user volume slider to your desired level.");
+};
+
+const quit = async (message, serverQueue) => {
+  if (!serverQueue)
+    return message.channel.send("Nothing is currently playing.");
+  if (!message.member.voice.channel)
+    return message.channel.send(
+      "You have to be in a voice channel to stop the music!"
+    );
+  try {
+    message.channel.send("Screw you guys, I'm going home.");
+    await serverQueue.connection.disconnect();
+    serverQueue.songs = [];
+  } catch (err) {
+    console.log(err);
+  }
 };
